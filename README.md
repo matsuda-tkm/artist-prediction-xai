@@ -6,6 +6,8 @@
 
 また、モデル説明手法「LIME」を用いて判定根拠を示します。
 
+![image](https://github.com/matsuda-tkm/artist-prediction-xai/assets/101240248/5ad6c0cd-ecb6-4f22-9be9-23fc544d468b)
+
 ## 動かし方
 
 1. `./scrape.py`または`./notebooks/scrape.ipynb`を使って歌詞データを収集します。
