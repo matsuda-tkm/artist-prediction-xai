@@ -13,7 +13,7 @@ from utils import encode
 PATH = '.'
 
 # 歌詞CSVの読み込み
-df = pd.read_csv(os.path.join(PATH,'lyric_block.csv'))
+df = pd.read_csv(os.path.join(PATH,'data/lyric_block.csv'))
 print(df.artist.unique())
 
 # 分類先アーティスト

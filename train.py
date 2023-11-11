@@ -16,7 +16,7 @@ print(device)
 PATH = '.'
 
 # 歌詞CSVの読み込み
-df = pd.read_csv(os.path.join(PATH,'lyric_block.csv'))
+df = pd.read_csv(os.path.join(PATH,'data/lyric_block.csv'))
 
 # 事前学習重みを読み込む
 weight_path = os.path.join(PATH, 'pretrain/model_fold1.pth')
