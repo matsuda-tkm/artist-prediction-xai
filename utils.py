@@ -1,8 +1,12 @@
+import os
+import copy
 import torch
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.pyplot as plt
+from collections import OrderedDict
 from janome.tokenizer import Tokenizer
+from sklearn.metrics import f1_score, accuracy_score
 
 def encode(txt, max_length=200):
     """歌詞の1文字1文字をUnicodeに変換する関数"""
@@ -15,6 +19,101 @@ def encode(txt, max_length=200):
             txt_line += ([0] * (max_length - txt_len))
         txt_list.append((txt_line))
     return np.array(txt_list)
+
+class Trainer:
+    def __init__(self, n_epochs, batch_size, learning_rate, criterion, gkf, groups, pretrain, device):
+        self.batch_size = batch_size
+        self.device = device
+        self.learning_rate = learning_rate
+        self.n_epochs = n_epochs
+        self.criterion = criterion
+        self.gkf = gkf
+        self.groups = groups
+        self.pretrain = pretrain
+        self.n_splits = gkf.get_n_splits()
+        self.bst_model, self.bst_score = dict(), dict()
+
+    def set_model(self, network, state_dict):
+        self.network = network
+        self.state_dict = copy.deepcopy(state_dict)
+
+    def reset_model(self):
+        model = self.network
+        model.load_state_dict(self.state_dict)
+        return model
+
+    def train(self, X, y, verbose=1):
+        for fold, (tr_idx, va_idx) in enumerate(self.gkf.split(X, y, groups=self.groups)):
+            # 学習データと評価用データに分割
+            print(f'-----Fold{fold+1}/{self.n_splits}-----')
+            X_tr, X_va = X[tr_idx], X[va_idx]
+            y_tr, y_va = y[tr_idx], y[va_idx]
+            n_iter = len(y_tr) // self.batch_size
+
+            model = self.reset_model().to(self.device)
+            optimizer = torch.optim.Adam(model.parameters(), lr=self.learning_rate)
+
+            self.bst_model[fold] = None
+            self.bst_score[fold] = -np.inf
+
+            # 学習
+            for epoch in range(self.n_epochs):
+                model.train()
+                total_loss = 0.0
+                total_correct = 0
+                random_idx = np.random.permutation(len(y_tr))
+                for i in range(n_iter):
+                    X_batch = torch.from_numpy(X_tr[random_idx[self.batch_size*i:self.batch_size*(i+1)]]).to(self.device)
+                    y_batch = torch.from_numpy(y_tr[random_idx[self.batch_size*i:self.batch_size*(i+1)]]).to(self.device)
+
+                    optimizer.zero_grad()
+                    outputs = model(X_batch)
+                    loss = self.criterion(outputs, y_batch)
+                    loss.backward()
+                    optimizer.step()
+
+                    total_loss += loss.item()
+                    _, predicted = outputs.max(dim=1)
+                    total_correct += (predicted == y_batch).sum().item()
+
+                train_loss = total_loss / n_iter
+                train_acc = total_correct / (self.batch_size*n_iter)
+
+                # 評価
+                model.eval()
+                with torch.no_grad():
+                    outputs = model(torch.from_numpy(X_va).to(self.device))
+                    loss = criterion(outputs, torch.from_numpy(y_va).to(self.device))
+                    valid_loss = loss.item()
+                    _, predicted = outputs.max(dim=1)
+                    valid_acc = accuracy_score(y_va, predicted.cpu().numpy())
+                    valid_f1 = f1_score(y_va, predicted.cpu().numpy(), average='macro')
+                if (epoch+1) % verbose == 0:
+                    print(f'Epoch[{epoch+1}/{self.n_epochs}], TrainLoss: {train_loss:.4f}, ValidLoss: {valid_loss:.4f}, TrainAcc: {train_acc*100:.4f}%, ValidAcc: {valid_acc*100:.4f}%, ValidF1: {valid_f1:.4f}')
+
+                # best更新処理
+                if valid_f1 > self.bst_score[fold]:
+                    self.bst_model[fold] = copy.deepcopy(model)
+                    self.bst_score[fold] = valid_f1
+
+            if self.pretrain:
+                break
+
+    def save_all(self, dirname):
+        os.makedirs(dirname, exist_ok=True)
+        for fold, model in self.bst_model.items():
+            filepath = os.path.join(dirname, f'model_fold{fold+1}.pth')
+            torch.save(model.state_dict(), filepath)
+            print(f'[Saved] score:{self.bst_score[fold]:.4f}  @ {filepath}')
+
+    def save_clf(self, dirname):
+        os.makedirs(dirname, exist_ok=True)
+        for fold, model in self.bst_model.items():
+            filepath = os.path.join(dirname, f'classifier_fold{fold+1}.pth')
+            clf_s = OrderedDict(list(model.state_dict().items())[1:])
+            torch.save(clf_s, filepath)
+            print(f'[Saved] score:{self.bst_score[fold]:.4f}  @ {filepath}')
+
 
 
 def predict_one_block(txt, embed, classifier, device):

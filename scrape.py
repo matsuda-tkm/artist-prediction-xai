@@ -6,12 +6,11 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from tqdm import tqdm
-import json
+import os
 
 # 保存先のパス
-PATH = './data/'
+PATH = './data'
 
 # アーティストの歌詞一覧へのリンク
 # - `url_dict`に`{'歌手名': ['URL1', 'URL2', ...]}`の形式でリンクを手動で記述する。
@@ -99,7 +98,8 @@ lyric_arr = np.array(lyric_arr)
 ## lyric_block.csv :  1行=1ブロック分の歌詞（**で分割）
 
 df_all = pd.DataFrame({'artist':artist_arr, 'title':title_arr, 'lyric':lyric_arr})
-df_all.to_csv(PATH+'lyric_all.csv', index=False)
+df_all.to_csv(os.path.join(PATH,'lyric_all.csv'), index=False)
+print('Saved: lyric_all.csv', df_all.shape)
 
 artist_block_arr = []
 title_block_arr = []
@@ -111,6 +111,5 @@ for artist,title,lyric in zip(artist_arr, title_arr, lyric_arr):
         block_arr.append(block)
 
 df_block = pd.DataFrame({'artist':artist_block_arr, 'title':title_block_arr, 'block':block_arr})
-df_block.to_csv(PATH+'lyric_block.csv', index=False)
-
-print(df_all.shape, df_block.shape)
+df_block.to_csv(os.path.join(PATH,'lyric_block.csv'), index=False)
+print('Saved: lyric_block.csv', df_block.shape)
