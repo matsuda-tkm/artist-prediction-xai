@@ -7,7 +7,7 @@ import torch.nn as nn
 from sklearn.model_selection import GroupKFold
 
 from network import CharacterCNN
-from utils import encode
+from utils import encode, Trainer
 
 # 保存先のパス
 PATH = '.'
@@ -25,13 +25,18 @@ X = encode(df['block'])
 # 目的変数y
 y = df['artist'].map(artist_to_label).values
 
-n_epochs = 20          # エポック数
-batch_size = 512       # バッチサイズ
-learning_rate = 0.001  # 学習率
-n_splits = 5           # GroupKFoldの分割数
+# エポック数
+n_epochs = 20
+# バッチサイズ
+batch_size = 512
+# 学習率
+learning_rate = 0.001
+# GroupKFoldの分割数
+n_splits = 5
+# 損失関数
 criterion = nn.CrossEntropyLoss()
-gkf = GroupKFold(n_splits,)  # GroupKfold
 
+gkf = GroupKFold(n_splits)
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
 

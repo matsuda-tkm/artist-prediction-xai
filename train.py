@@ -7,7 +7,7 @@ import torch.nn as nn
 from sklearn.model_selection import GroupKFold
 
 from network import CharacterCNN
-from utils import encode
+from utils import encode, Trainer
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
