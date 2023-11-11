@@ -17,13 +17,12 @@ def encode(txt, max_length=200):
     return np.array(txt_list)
 
 
-def predict_one_block(txt):
+def predict_one_block(txt, embed, classifier, device):
     """歌詞1ブロックに対する予測を行う関数
     txt[string] : 歌詞1ブロック分
 
     --> 各アーティストに対する確率値の配列(1次元)
     """
-    global embed, classifier
     txt = txt.strip().replace('\n','*').replace('\u3000','*')
     txt_enc = torch.from_numpy(encode([txt]))
     txt_emb = embed(txt_enc.to(device))
@@ -39,13 +38,12 @@ def predict_one_block(txt):
     prob = np.array(probs)[:,1]
     return prob
 
-def predict_some_block(txt_list):
+def predict_some_block(txt_list, embed, classifier, device):
     """歌詞ブロックのリストに対する予測を行う関数
     txt_list[list] : 歌詞1ブロックを1要素とするリスト
 
     --> 各アーティストに対する確率値の配列。(txt_listの長さ, 全アーティスト数)の2次元配列
     """
-    global embed, classifier
     txt_arr = []
     for txt in txt_list:
         txt = txt.replace(' ','')
@@ -65,7 +63,7 @@ def predict_some_block(txt_list):
     probs = np.array(probs)[:,:,1].transpose(1,0)
     return probs
 
-def predict_whole_song(txt_list):
+def predict_whole_song(txt_list, embed, classifier, device):
     """1曲のリストに対する予測を行う関数
     txt_list[list] : 1曲の歌詞を1要素とするリスト。ただし1曲の歌詞は'\n\n'によりブロックで分割されていること。
 
@@ -73,7 +71,7 @@ def predict_whole_song(txt_list):
     """
     prob_arr = []
     for txt in txt_list:
-        prob_arr.append(predict_some_block(txt.split('\n\n')).mean(axis=0))
+        prob_arr.append(predict_some_block(txt.split('\n\n'), embed, classifier, device).mean(axis=0))
     return np.array(prob_arr)
 
 def show_predict_one_block(prob, artists, sort, figsize=(10,3)):
