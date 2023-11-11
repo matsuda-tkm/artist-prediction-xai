@@ -21,12 +21,13 @@ def encode(txt, max_length=200):
     return np.array(txt_list)
 
 class Trainer:
-    def __init__(self, n_epochs, batch_size, learning_rate, criterion, gkf, groups, pretrain, device):
+    def __init__(self, n_epochs, batch_size, learning_rate, criterion, opt, gkf, groups, pretrain, device):
         self.batch_size = batch_size
         self.device = device
         self.learning_rate = learning_rate
         self.n_epochs = n_epochs
         self.criterion = criterion
+        self.opt = opt
         self.gkf = gkf
         self.groups = groups
         self.pretrain = pretrain
@@ -51,7 +52,7 @@ class Trainer:
             n_iter = len(y_tr) // self.batch_size
 
             model = self.reset_model().to(self.device)
-            optimizer = torch.optim.Adam(model.parameters(), lr=self.learning_rate)
+            optimizer = self.opt(model.parameters(), lr=self.learning_rate)
 
             self.bst_model[fold] = None
             self.bst_score[fold] = -np.inf
@@ -83,7 +84,7 @@ class Trainer:
                 model.eval()
                 with torch.no_grad():
                     outputs = model(torch.from_numpy(X_va).to(self.device))
-                    loss = criterion(outputs, torch.from_numpy(y_va).to(self.device))
+                    loss = self.criterion(outputs, torch.from_numpy(y_va).to(self.device))
                     valid_loss = loss.item()
                     _, predicted = outputs.max(dim=1)
                     valid_acc = accuracy_score(y_va, predicted.cpu().numpy())

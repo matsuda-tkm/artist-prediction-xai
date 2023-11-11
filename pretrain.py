@@ -26,7 +26,7 @@ X = encode(df['block'])
 y = df['artist'].map(artist_to_label).values
 
 # エポック数
-n_epochs = 20
+n_epochs = 10
 # バッチサイズ
 batch_size = 512
 # 学習率
@@ -55,7 +55,7 @@ def seed_everything(seed: int):
 seed_everything(0)
 model = CharacterCNN(num_classes=len(artists), embed_size=256, filter_sizes=(2,3,4,5), filter_num=64)
 
-pretrain = Trainer(n_epochs, batch_size, learning_rate, criterion, gkf, df['title'], True, device)
+pretrain = Trainer(n_epochs, batch_size, learning_rate, criterion, torch.optim.Adam, gkf, df['title'], True, device)
 pretrain.set_model(model, model.state_dict())
 pretrain.train(X, y)
 pretrain.save_all(os.path.join(PATH, 'pretrain'))

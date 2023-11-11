@@ -18,6 +18,10 @@ PATH = '.'
 # 歌詞CSVの読み込み
 df = pd.read_csv(os.path.join(PATH,'data/lyric_block.csv'))
 
+# 分類先アーティスト
+artists = list(df.artist.unique())
+artist_to_label = {artist:i for i,artist in enumerate(artists)}
+
 # 事前学習重みを読み込む
 weight_path = os.path.join(PATH, 'pretrain/model_fold1.pth')
 model = CharacterCNN(num_classes=len(artists), embed_size=256, filter_sizes=(2,3,4,5), filter_num=64)
@@ -47,7 +51,7 @@ for artist in artists:
     X = encode(df_sub['block'])
     y = df_sub['artist'].map({artist:1}).fillna(0).values.astype('int')
 
-    train = Trainer(n_epochs, batch_size, learning_rate, criterion, gkf, df_sub['title'], False, device)
+    train = Trainer(n_epochs, batch_size, learning_rate, criterion, torch.optim.Adam, gkf, df_sub['title'], False, device)
     train.set_model(model, model.state_dict())
     train.train(X, y, 10)
     train.save_clf(os.path.join(PATH, f'models/{artist}'))
