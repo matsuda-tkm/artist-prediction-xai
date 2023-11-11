@@ -10,9 +10,18 @@
 
 ## 動かし方
 
-1. `./scrape.py`または`./notebooks/scrape.ipynb`を使って歌詞データを収集します。
-2. `./train.py`または`./notebooks/train.ipynb`を使ってモデルの学習を行います。
-3. `./notebooks/demo.ipynb`でデモを実行することができます。
+1. `./scrape.py` を実行して歌詞データを収集します。
+    - `/data` に収集データが保存されます。
+    - `url_dict` を編集/追加することで、収集データをご自分でカスタマイズできます。
+1. `./pretrain.py` を実行してモデルの事前学習を行います。
+    - `/pretrain` に学習済みモデルが保存されます。
+    - `n_epochs`, `batch_size`, `learning_rate` などをカスタマイズできます。
+    - `Trainer` クラスは `utils.py` に実装されています。
+1. `./train.py`を実行して、ファインチューニングを行います。
+    - 各アーティストに対して「歌詞がそのアーティストかどうか」を分類する二値分類器を学習します。
+    - `/models` に学習済みモデルが保存されます。
+    - `n_epochs`, `batch_size`, `learning_rate` などをカスタマイズできます。
+1. `./demo.ipynb` でデモを実行することができます。 
 
 ## Requirement
 Google Colaboratoryで動かす場合は、以下のライブラリのインストールが必要です。
