@@ -146,7 +146,7 @@ def wakachi_some_block(txt):
         wakachi_txt += wakachi_one_block(block) + '\n\n'
     return wakachi_txt
 
-def highlight(exp, wakachi_txt, sort_by=False):
+def highlight(exp, wakachi_txt, artists, sort_by=False):
     """LIMEの結果をハイライト表示"""
     highlighted_text = '<h2><span style="color: black; background-color: rgba(255,128,0,1);">ぽい</span> / <span style="color: black; background-color: rgba(0,128,255,1);">ぽくない</span>判定理由</h2>'
 
