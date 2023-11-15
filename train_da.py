@@ -58,6 +58,6 @@ for artist in artists:
     y = df_sub['artist'].map({artist:1}).fillna(0).values.astype('int')
 
     train = Trainer(n_epochs, batch_size, learning_rate, criterion, torch.optim.Adam, gkf, df_sub['title'], False, device)
-    train.set_model(model, model.state_dict())
+    train.set_model(model)
     train.train(X, y, 10)
     train.save_clf(os.path.join(PATH, f'models_da/{artist}'))

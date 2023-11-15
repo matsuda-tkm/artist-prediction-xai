@@ -49,12 +49,12 @@ class Trainer:
         self.n_splits = gkf.get_n_splits()
         self.bst_model, self.bst_score = dict(), dict()
 
-    def set_model(self, network, state_dict):
-        self.network = network
-        self.state_dict = copy.deepcopy(state_dict)
+    def set_model(self, model):
+        self.network = model
+        self.state_dict = model.state_dict()
 
     def reset_model(self):
-        model = self.network
+        model = copy.deepcopy(self.network)
         model.load_state_dict(self.state_dict)
         return model
 
