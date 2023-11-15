@@ -60,4 +60,4 @@ for artist in artists:
     train = Trainer(n_epochs, batch_size, learning_rate, criterion, torch.optim.Adam, gkf, df_sub['title'], False, device)
     train.set_model(model, model.state_dict())
     train.train(X, y, 10)
-    train.save_clf(os.path.join(PATH, f'models/{artist}'))
+    train.save_clf(os.path.join(PATH, f'models_da/{artist}'))
