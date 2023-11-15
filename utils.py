@@ -20,6 +20,21 @@ def encode(txt, max_length=200):
         txt_list.append((txt_line))
     return np.array(txt_list)
 
+def remove_random_symbols(txt, remove_rate=0.5):
+    """文字列txtから記号をランダムに除去する関数"""
+    letters, symbols, non_symbols = [],[],[]
+    for i,let in enumerate(str(txt).strip()):
+        letters.append(let)
+        if let in [' ','*',"'",'"','.', ',', '-','/',';']:
+            symbols.append(i)
+        else:
+            non_symbols.append(i)
+    letters, symbols, non_symbols = np.array(letters), np.array(symbols,dtype='int'), np.array(non_symbols,dtype='int')
+    selected = np.random.choice(symbols, size=int(len(symbols)*(1-remove_rate)), replace=False)
+    selected = np.concatenate([non_symbols, selected])
+    selected = np.sort(selected)
+    return ''.join(letters[selected])
+
 class Trainer:
     def __init__(self, n_epochs, batch_size, learning_rate, criterion, opt, gkf, groups, pretrain, device):
         self.batch_size = batch_size
