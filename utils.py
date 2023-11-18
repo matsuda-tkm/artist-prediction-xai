@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from collections import OrderedDict
-from janome.tokenizer import Tokenizer
 from sklearn.metrics import f1_score, accuracy_score
 
 def encode(txt, max_length=200):
@@ -239,6 +238,7 @@ def show_predict_whole_song(prob_arr, artists, sort, raw_txt_arr, figsize=(10,7)
 
 def wakachi_one_block(txt):
     """日本語テキストを分かち書きする(歌詞ブロック版)"""
+    from janome.tokenizer import Tokenizer
     txt = txt.replace('\u3000','')
     tokenizer = Tokenizer()
     tokens = tokenizer.tokenize(txt)
