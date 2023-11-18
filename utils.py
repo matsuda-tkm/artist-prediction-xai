@@ -3,9 +3,7 @@ import copy
 import torch
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from collections import OrderedDict
-from sklearn.metrics import f1_score, accuracy_score
 
 def encode(txt, max_length=200):
     """歌詞の1文字1文字をUnicodeに変換する関数"""
@@ -36,6 +34,7 @@ def remove_random_symbols(txt, remove_rate=0.5):
 
 class Trainer:
     def __init__(self, n_epochs, batch_size, learning_rate, criterion, opt, gkf, groups, pretrain, device):
+        from sklearn.metrics import f1_score, accuracy_score
         self.batch_size = batch_size
         self.device = device
         self.learning_rate = learning_rate
@@ -190,6 +189,7 @@ def predict_whole_song(txt_list, embed, classifier, device):
 
 def show_predict_one_block(prob, artists, sort, figsize=(10,3)):
     """予測結果を可視化する関数(歌詞ブロック版)"""
+    import matplotlib.pyplot as plt
     if sort:
         order = np.argsort(prob)[::-1]
         prob = np.array(prob)[order]
@@ -206,6 +206,7 @@ def show_predict_one_block(prob, artists, sort, figsize=(10,3)):
 
 def show_predict_whole_song(prob_arr, artists, sort, raw_txt_arr, figsize=(10,7)):
     """予測結果を可視化する関数(歌詞全体版)"""
+    import matplotlib.pyplot as plt
     fig,axs = plt.subplots(2,1, figsize=figsize)
     # 予測値の平均
     prob_mean = prob_arr.mean(axis=0)
